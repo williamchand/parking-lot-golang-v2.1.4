@@ -118,7 +118,7 @@ func (m *mysqlParkingLotRepository) Store(ctx context.Context, a *domain.Parking
 }
 
 func (m *mysqlParkingLotRepository) UpdateOccupied(ctx context.Context, ar *domain.ParkingLot) (res int64, err error) {
-	query := `UPDATE parking_lot set registration_number=?, colour=?, is_occupied=?, created_at=?, updated_at=?
+	query := `UPDATE parking_lot set registration_number=?, colour=?, is_occupied=?, updated_at=?
 						WHERE id in (SELECT id FROM (SELECT id FROM parking_lot WHERE is_occupied=false ORDER BY id LIMIT 1) as t)`
 
 	stmt, err := m.Conn.PrepareContext(ctx, query)
@@ -126,7 +126,7 @@ func (m *mysqlParkingLotRepository) UpdateOccupied(ctx context.Context, ar *doma
 		return
 	}
 
-	result, err := stmt.ExecContext(ctx, ar.RegistrationNumber, ar.Colour, true, ar.CreatedAt, ar.UpdatedAt)
+	result, err := stmt.ExecContext(ctx, ar.RegistrationNumber, ar.Colour, true, ar.UpdatedAt)
 	if err != nil {
 		return
 	}
@@ -147,8 +147,8 @@ func (m *mysqlParkingLotRepository) UpdateOccupied(ctx context.Context, ar *doma
 	return
 }
 
-func (m *mysqlParkingLotRepository) UpdateUnOccupied(ctx context.Context, id int64) (err error) {
-	query := `UPDATE parking_lot set registration_number=NULL, colour=NULL, is_occupied=FALSE
+func (m *mysqlParkingLotRepository) UpdateUnOccupied(ctx context.Context, id int64, updatedAt time.Time) (err error) {
+	query := `UPDATE parking_lot set registration_number=NULL, colour=NULL, is_occupied=FALSE, updated_at = ?
 						WHERE id = ? and is_occupied=TRUE`
 
 	stmt, err := m.Conn.PrepareContext(ctx, query)

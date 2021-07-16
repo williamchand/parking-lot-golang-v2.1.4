@@ -30,5 +30,5 @@ type ParkingLotRepository interface {
 	DeleteAllSlot(ctx context.Context) error
 	Store(ctx context.Context, a *ParkingLot) error
 	UpdateOccupied(ctx context.Context, ar *ParkingLot) (int64, error)
-	UpdateUnOccupied(ctx context.Context, id int64) error
+	UpdateUnOccupied(ctx context.Context, id int64, updatedAt time.Time) error
 }

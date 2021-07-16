@@ -106,6 +106,7 @@ func (a *parkingLotUsecase) OccupyParkingLot(c context.Context, registrationNumb
 	ar := domain.ParkingLot{
 		RegistrationNumber: registrationNumber,
 		Colour: colour,
+		UpdatedAt: time.Now(),
 	}
 	return a.parkingLotRepo.UpdateOccupied(ctx, &ar)
 }
@@ -114,5 +115,6 @@ func (a *parkingLotUsecase) UnOccupyParkingLot(c context.Context, id int64) (err
 	ctx, cancel := context.WithTimeout(c, a.contextTimeout)
 	defer cancel()
 
-	return a.parkingLotRepo.UpdateUnOccupied(ctx, id)
+	UpdatedAt:= time.Now()
+	return a.parkingLotRepo.UpdateUnOccupied(ctx, id,UpdatedAt)
 }
