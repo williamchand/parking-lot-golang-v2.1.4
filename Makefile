@@ -1,4 +1,5 @@
 BINARY=engine
+SSH_PATH= $(shell if [ ! -z $$CI ]; then echo $$PWD/ssh; else echo $$HOME/.ssh; fi)
 test: 
 	go test -v -cover -covermode=atomic ./...
 
@@ -17,8 +18,6 @@ docker:
 
 run:
 	docker-compose up --build -d
-env:
-	go env -w GOPRIVATE=github.com/williamchand
 stop:
 	docker-compose down
 

@@ -11,8 +11,8 @@ import (
 	"github.com/labstack/echo"
 	"github.com/spf13/viper"
 
-	_parkingLotHttpDelivery "github.com/williamchand/parking-lot-golang-v2.1.4/parking_lot/delivery/http"
-	_parkingLotHttpDeliveryMiddleware "github.com/williamchand/parking-lot-golang-v2.1.4/parking_lot/delivery/http/middleware"
+	_parkingLotHttpDelivery "github.com/williamchand/parking-lot-golang-v2.1.4/parking_lot/delivery"
+	_parkingLotHttpDeliveryMiddleware "github.com/williamchand/parking-lot-golang-v2.1.4/parking_lot/delivery/middleware"
 	_parkingLotRepo "github.com/williamchand/parking-lot-golang-v2.1.4/parking_lot/repository/mysql"
 	_parkingLotUcase "github.com/williamchand/parking-lot-golang-v2.1.4/parking_lot/usecase"
 )
