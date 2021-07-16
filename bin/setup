@@ -1,0 +1,3 @@
+go install
+go test
+go build parking_lot/main.go
