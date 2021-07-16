@@ -13,7 +13,7 @@ import (
 
 	_parkingLotHttpDelivery "github.com/williamchand/parking-lot-golang-v2.1.4/parking_lot/delivery"
 	_parkingLotHttpDeliveryMiddleware "github.com/williamchand/parking-lot-golang-v2.1.4/parking_lot/delivery/middleware"
-	_parkingLotRepo "github.com/williamchand/parking-lot-golang-v2.1.4/parking_lot/repository/mysql"
+	_parkingLotRepo "github.com/williamchand/parking-lot-golang-v2.1.4/parking_lot/repository"
 	_parkingLotUcase "github.com/williamchand/parking-lot-golang-v2.1.4/parking_lot/usecase"
 )
 
