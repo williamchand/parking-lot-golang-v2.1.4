@@ -14,13 +14,13 @@ type ParkingLotRepository struct {
 	mock.Mock
 }
 
-// Delete provides a mock function with given fields: ctx, id
-func (_m *ParkingLotRepository) Delete(ctx context.Context, id int64) error {
-	ret := _m.Called(ctx, id)
+// DeleteAllSlot provides a mock function with given fields: ctx
+func (_m *ParkingLotRepository) DeleteAllSlot(ctx context.Context) error {
+	ret := _m.Called(ctx)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, int64) error); ok {
-		r0 = rf(ctx, id)
+	if rf, ok := ret.Get(0).(func(context.Context) error); ok {
+		r0 = rf(ctx)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -28,50 +28,22 @@ func (_m *ParkingLotRepository) Delete(ctx context.Context, id int64) error {
 	return r0
 }
 
-// Fetch provides a mock function with given fields: ctx, cursor, num
-func (_m *ParkingLotRepository) Fetch(ctx context.Context, cursor string, num int64) ([]domain.ParkingLot, string, error) {
-	ret := _m.Called(ctx, cursor, num)
+// Fetch provides a mock function with given fields: ctx
+func (_m *ParkingLotRepository) Fetch(ctx context.Context) ([]domain.ParkingLot, error) {
+	ret := _m.Called(ctx)
 
 	var r0 []domain.ParkingLot
-	if rf, ok := ret.Get(0).(func(context.Context, string, int64) []domain.ParkingLot); ok {
-		r0 = rf(ctx, cursor, num)
+	if rf, ok := ret.Get(0).(func(context.Context) []domain.ParkingLot); ok {
+		r0 = rf(ctx)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]domain.ParkingLot)
 		}
 	}
 
-	var r1 string
-	if rf, ok := ret.Get(1).(func(context.Context, string, int64) string); ok {
-		r1 = rf(ctx, cursor, num)
-	} else {
-		r1 = ret.Get(1).(string)
-	}
-
-	var r2 error
-	if rf, ok := ret.Get(2).(func(context.Context, string, int64) error); ok {
-		r2 = rf(ctx, cursor, num)
-	} else {
-		r2 = ret.Error(2)
-	}
-
-	return r0, r1, r2
-}
-
-// GetByID provides a mock function with given fields: ctx, id
-func (_m *ParkingLotRepository) GetByID(ctx context.Context, id int64) (domain.ParkingLot, error) {
-	ret := _m.Called(ctx, id)
-
-	var r0 domain.ParkingLot
-	if rf, ok := ret.Get(0).(func(context.Context, int64) domain.ParkingLot); ok {
-		r0 = rf(ctx, id)
-	} else {
-		r0 = ret.Get(0).(domain.ParkingLot)
-	}
-
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, int64) error); ok {
-		r1 = rf(ctx, id)
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -79,20 +51,41 @@ func (_m *ParkingLotRepository) GetByID(ctx context.Context, id int64) (domain.P
 	return r0, r1
 }
 
-// GetByTitle provides a mock function with given fields: ctx, title
-func (_m *ParkingLotRepository) GetByTitle(ctx context.Context, title string) (domain.ParkingLot, error) {
-	ret := _m.Called(ctx, title)
+// GetByColour provides a mock function with given fields: ctx, colour
+func (_m *ParkingLotRepository) GetByColour(ctx context.Context, colour string) (domain.ParkingLot, error) {
+	ret := _m.Called(ctx, colour)
 
 	var r0 domain.ParkingLot
 	if rf, ok := ret.Get(0).(func(context.Context, string) domain.ParkingLot); ok {
-		r0 = rf(ctx, title)
+		r0 = rf(ctx, colour)
 	} else {
 		r0 = ret.Get(0).(domain.ParkingLot)
 	}
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
-		r1 = rf(ctx, title)
+		r1 = rf(ctx, colour)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetByRegistrationNumber provides a mock function with given fields: ctx, registrationNumber
+func (_m *ParkingLotRepository) GetByRegistrationNumber(ctx context.Context, registrationNumber string) (domain.ParkingLot, error) {
+	ret := _m.Called(ctx, registrationNumber)
+
+	var r0 domain.ParkingLot
+	if rf, ok := ret.Get(0).(func(context.Context, string) domain.ParkingLot); ok {
+		r0 = rf(ctx, registrationNumber)
+	} else {
+		r0 = ret.Get(0).(domain.ParkingLot)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, registrationNumber)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -114,13 +107,34 @@ func (_m *ParkingLotRepository) Store(ctx context.Context, a *domain.ParkingLot)
 	return r0
 }
 
-// Update provides a mock function with given fields: ctx, ar
-func (_m *ParkingLotRepository) Update(ctx context.Context, ar *domain.ParkingLot) error {
+// UpdateOccupied provides a mock function with given fields: ctx, ar
+func (_m *ParkingLotRepository) UpdateOccupied(ctx context.Context, ar *domain.ParkingLot) (domain.ParkingLot, error) {
 	ret := _m.Called(ctx, ar)
 
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *domain.ParkingLot) error); ok {
+	var r0 domain.ParkingLot
+	if rf, ok := ret.Get(0).(func(context.Context, *domain.ParkingLot) domain.ParkingLot); ok {
 		r0 = rf(ctx, ar)
+	} else {
+		r0 = ret.Get(0).(domain.ParkingLot)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, *domain.ParkingLot) error); ok {
+		r1 = rf(ctx, ar)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// UpdateUnOccupied provides a mock function with given fields: ctx, id
+func (_m *ParkingLotRepository) UpdateUnOccupied(ctx context.Context, id int64) error {
+	ret := _m.Called(ctx, id)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int64) error); ok {
+		r0 = rf(ctx, id)
 	} else {
 		r0 = ret.Error(0)
 	}
