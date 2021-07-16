@@ -11,10 +11,10 @@ import (
 	"github.com/labstack/echo"
 	"github.com/spf13/viper"
 
-	_articleHttpDelivery "gitlab.mapan.io/playground/parking-lot-golang/parking_lot/delivery/http"
-	_articleHttpDeliveryMiddleware "gitlab.mapan.io/playground/parking-lot-golang/parking_lot/delivery/http/middleware"
-	_articleRepo "gitlab.mapan.io/playground/parking-lot-golang/parking_lot/repository/mysql"
-	_articleUcase "gitlab.mapan.io/playground/parking-lot-golang/parking_lot/usecase"
+	_parkingLotHttpDelivery "github.com/williamchand/parking-lot-golang-v2.1.4/parking_lot/delivery/http"
+	_parkingLotHttpDeliveryMiddleware "github.com/williamchand/parking-lot-golang-v2.1.4/parking_lot/delivery/http/middleware"
+	_parkingLotRepo "github.com/williamchand/parking-lot-golang-v2.1.4/parking_lot/repository/mysql"
+	_parkingLotUcase "github.com/williamchand/parking-lot-golang-v2.1.4/parking_lot/usecase"
 )
 
 func init() {
@@ -58,13 +58,13 @@ func main() {
 	}()
 
 	e := echo.New()
-	middL := _articleHttpDeliveryMiddleware.InitMiddleware()
+	middL := _parkingLotHttpDeliveryMiddleware.InitMiddleware()
 	e.Use(middL.CORS)
-	ar := _articleRepo.NewMysqlArticleRepository(dbConn)
+	ar := _parkingLotRepo.NewMysqlParkingLotRepository(dbConn)
 
 	timeoutContext := time.Duration(viper.GetInt("context.timeout")) * time.Second
-	au := _articleUcase.NewArticleUsecase(ar, timeoutContext)
-	_articleHttpDelivery.NewArticleHandler(e, au)
+	au := _parkingLotUcase.NewParkingLotUsecase(ar, timeoutContext)
+	_parkingLotHttpDelivery.NewParkingLotHandler(e, au)
 
 	log.Fatal(e.Start(viper.GetString("server.address")))
 }

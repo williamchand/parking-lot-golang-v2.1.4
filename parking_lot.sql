@@ -8,9 +8,9 @@ USE `parking_lot`;
 DROP TABLE IF EXISTS `parking_lot`;
 CREATE TABLE `parking_lot` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `title` varchar(45) COLLATE utf8_unicode_ci NOT NULL,
-  `content` longtext COLLATE utf8_unicode_ci NOT NULL,
-  `author_id` int(11) DEFAULT '0',
+  `registration_number` varchar(45) COLLATE utf8_unicode_ci NOT NULL,
+  `colour` varchar(45) COLLATE utf8_unicode_ci NOT NULL,
+  `is_occupied` boolean DEFAULT FALSE,
   `updated_at` datetime DEFAULT NULL,
   `created_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
