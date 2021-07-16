@@ -1,5 +1,4 @@
 BINARY=engine
-SSH_PATH= $(shell if [ ! -z $$CI ]; then echo $$PWD/ssh; else echo $$HOME/.ssh; fi)
 test: 
 	go test -v -cover -covermode=atomic ./...
 
