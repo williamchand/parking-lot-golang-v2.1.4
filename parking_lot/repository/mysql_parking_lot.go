@@ -49,10 +49,10 @@ func (m *mysqlParkingLotRepository) fetch(ctx context.Context, query string, arg
 func (m *mysqlParkingLotRepository) Fetch(ctx context.Context, colour *string) (res []domain.ParkingLot, err error) {
 	args := ""
 	if colour != nil {
-		args = "colour = ?"
+		args = "and colour = ?"
 	}
 	query := fmt.Sprintf(`SELECT id,registration_number,colour, is_occupied, created_at, updated_at
-											 FROM parking_lot WHERE is_occupied = TRUE and %s ORDER BY id`, args)
+											 FROM parking_lot WHERE is_occupied = TRUE %s ORDER BY id`, args)
 	if colour != nil {
 		res, err = m.fetch(ctx, query, colour)
 	} else {
@@ -119,7 +119,7 @@ func (m *mysqlParkingLotRepository) Store(ctx context.Context, a *domain.Parking
 
 func (m *mysqlParkingLotRepository) UpdateOccupied(ctx context.Context, ar *domain.ParkingLot) (res int64, err error) {
 	query := `UPDATE parking_lot set registration_number=?, colour=?, is_occupied=?, created_at=?, updated_at=?
-						WHERE id = (SELECT id FROM parking_lot WHERE is_occupied=false ORDER BY id LIMIT 1) `
+						WHERE id in (SELECT id FROM (SELECT id FROM parking_lot WHERE is_occupied=false ORDER BY id LIMIT 1) as t)`
 
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
