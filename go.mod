@@ -1,6 +1,6 @@
 module github.com/williamchand/parking-lot-golang-v2.1.4
 
-go 1.15.3
+go 1.15
 
 require (
 	github.com/bxcodec/faker v2.0.1+incompatible
