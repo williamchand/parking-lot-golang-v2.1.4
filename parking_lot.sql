@@ -8,8 +8,8 @@ USE `parking_lot`;
 DROP TABLE IF EXISTS `parking_lot`;
 CREATE TABLE `parking_lot` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `registration_number` varchar(45) COLLATE utf8_unicode_ci NOT NULL,
-  `colour` varchar(45) COLLATE utf8_unicode_ci NOT NULL,
+  `registration_number` varchar(45) COLLATE utf8_unicode_ci,
+  `colour` varchar(45) COLLATE utf8_unicode_ci,
   `is_occupied` boolean DEFAULT FALSE,
   `updated_at` datetime DEFAULT NULL,
   `created_at` datetime DEFAULT NULL,
