@@ -5,7 +5,6 @@ import (
 	"strconv"
 
 	"github.com/labstack/echo"
-	"github.com/sirupsen/logrus"
 
 	"github.com/williamchand/parking-lot-golang-v2.1.4/parking_lot/domain"
 )
@@ -134,7 +133,6 @@ func getStatusCode(err error) int {
 		return http.StatusOK
 	}
 
-	logrus.Error(err)
 	switch err {
 	case domain.ErrInternalServerError:
 		return http.StatusInternalServerError

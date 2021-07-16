@@ -28,13 +28,13 @@ func (_m *ParkingLotRepository) DeleteAllSlot(ctx context.Context) error {
 	return r0
 }
 
-// Fetch provides a mock function with given fields: ctx
-func (_m *ParkingLotRepository) Fetch(ctx context.Context) ([]domain.ParkingLot, error) {
-	ret := _m.Called(ctx)
+// Fetch provides a mock function with given fields: ctx, colour
+func (_m *ParkingLotRepository) Fetch(ctx context.Context, colour *string) ([]domain.ParkingLot, error) {
+	ret := _m.Called(ctx, colour)
 
 	var r0 []domain.ParkingLot
-	if rf, ok := ret.Get(0).(func(context.Context) []domain.ParkingLot); ok {
-		r0 = rf(ctx)
+	if rf, ok := ret.Get(0).(func(context.Context, *string) []domain.ParkingLot); ok {
+		r0 = rf(ctx, colour)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]domain.ParkingLot)
@@ -42,28 +42,7 @@ func (_m *ParkingLotRepository) Fetch(ctx context.Context) ([]domain.ParkingLot,
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
-		r1 = rf(ctx)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetByColour provides a mock function with given fields: ctx, colour
-func (_m *ParkingLotRepository) GetByColour(ctx context.Context, colour string) (domain.ParkingLot, error) {
-	ret := _m.Called(ctx, colour)
-
-	var r0 domain.ParkingLot
-	if rf, ok := ret.Get(0).(func(context.Context, string) domain.ParkingLot); ok {
-		r0 = rf(ctx, colour)
-	} else {
-		r0 = ret.Get(0).(domain.ParkingLot)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, *string) error); ok {
 		r1 = rf(ctx, colour)
 	} else {
 		r1 = ret.Error(1)
@@ -72,8 +51,8 @@ func (_m *ParkingLotRepository) GetByColour(ctx context.Context, colour string) 
 	return r0, r1
 }
 
-// GetByRegistrationNumber provides a mock function with given fields: ctx, registrationNumber
-func (_m *ParkingLotRepository) GetByRegistrationNumber(ctx context.Context, registrationNumber string) (domain.ParkingLot, error) {
+// GetIdByRegistrationNumber provides a mock function with given fields: ctx, registrationNumber
+func (_m *ParkingLotRepository) GetIdByRegistrationNumber(ctx context.Context, registrationNumber string) (domain.ParkingLot, error) {
 	ret := _m.Called(ctx, registrationNumber)
 
 	var r0 domain.ParkingLot
@@ -108,14 +87,14 @@ func (_m *ParkingLotRepository) Store(ctx context.Context, a *domain.ParkingLot)
 }
 
 // UpdateOccupied provides a mock function with given fields: ctx, ar
-func (_m *ParkingLotRepository) UpdateOccupied(ctx context.Context, ar *domain.ParkingLot) (domain.ParkingLot, error) {
+func (_m *ParkingLotRepository) UpdateOccupied(ctx context.Context, ar *domain.ParkingLot) (int64, error) {
 	ret := _m.Called(ctx, ar)
 
-	var r0 domain.ParkingLot
-	if rf, ok := ret.Get(0).(func(context.Context, *domain.ParkingLot) domain.ParkingLot); ok {
+	var r0 int64
+	if rf, ok := ret.Get(0).(func(context.Context, *domain.ParkingLot) int64); ok {
 		r0 = rf(ctx, ar)
 	} else {
-		r0 = ret.Get(0).(domain.ParkingLot)
+		r0 = ret.Get(0).(int64)
 	}
 
 	var r1 error

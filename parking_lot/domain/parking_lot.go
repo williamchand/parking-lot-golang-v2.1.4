@@ -25,11 +25,10 @@ type ParkingLotUsecase interface {
 }
 
 type ParkingLotRepository interface {
-	Fetch(ctx context.Context) (res []ParkingLot, err error)
-	GetByColour(ctx context.Context, colour string) (ParkingLot, error)
-	GetByRegistrationNumber(ctx context.Context, registrationNumber string) (ParkingLot, error)
-	UpdateOccupied(ctx context.Context, ar *ParkingLot) (ParkingLot, error)
-	UpdateUnOccupied(ctx context.Context, id int64) error
-	Store(ctx context.Context, a *ParkingLot) error
+	Fetch(ctx context.Context, colour *string) ([]ParkingLot, error)
+	GetIdByRegistrationNumber(ctx context.Context, registrationNumber string) (ParkingLot, error)
 	DeleteAllSlot(ctx context.Context) error
+	Store(ctx context.Context, a *ParkingLot) error
+	UpdateOccupied(ctx context.Context, ar *ParkingLot) (int64, error)
+	UpdateUnOccupied(ctx context.Context, id int64) error
 }
