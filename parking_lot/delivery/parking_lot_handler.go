@@ -3,6 +3,7 @@ package delivery
 import (
 	"net/http"
 	"strconv"
+	"fmt"
 
 	"github.com/labstack/echo"
 
@@ -39,7 +40,7 @@ func (a *ParkingLotHandler) CreateParkingLot(c echo.Context) error {
 	if err != nil {
 		return c.JSON(getStatusCode(err),  err.Error())
 	}
-	response = fmt.Sprintf("Created a parking lot with %d slots", num)
+	response := fmt.Sprintf("Created a parking lot with %d slots", num)
 
 	return c.JSON(http.StatusOK, response)
 }
@@ -56,7 +57,7 @@ func (a *ParkingLotHandler) OccupyParkingLot(c echo.Context) error {
 	} else if err != nil {
 		return c.JSON(getStatusCode(err),  err.Error())
 	}
-	response = fmt.Sprintf("Allocated slot number: %d", slot_number)
+	response := fmt.Sprintf("Allocated slot number: %d", slot_number)
 
 	return c.JSON(http.StatusOK, response)
 }
@@ -71,7 +72,7 @@ func (a *ParkingLotHandler) UnOccupyParkingLot(c echo.Context) error {
 	if err != nil {
 		return c.JSON(getStatusCode(err),  err.Error())
 	}
-	response = fmt.Sprintf("Slot number %d is free", num)
+	response := fmt.Sprintf("Slot number %d is free", num)
 
 	return c.JSON(http.StatusOK, response)
 }
