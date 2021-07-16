@@ -25,9 +25,9 @@ func NewParkingLotHandler(e *echo.Echo, us domain.ParkingLotUsecase) {
 	e.POST("/park/:registration_number/:colour", handler.OccupyParkingLot)
 	e.POST("/leave/:id", handler.UnOccupyParkingLot)
 	e.GET("/status", handler.FetchStatus)
+	e.GET("/slot_number/car_registration_number/:registration_number", handler.GetIdByRegistrationNumber)
 	e.GET("/cars_registration_number/colour/:colour", handler.FetchRegistrationNumber)
 	e.GET("/cars_slot/colour/:colour", handler.FetchCarsSlot)
-	e.GET("/slot_number/car_registration_number/:registration_number", handler.GetIdByRegistrationNumber)
 }
 
 // CreateParkingLot will create parking slot based on given params

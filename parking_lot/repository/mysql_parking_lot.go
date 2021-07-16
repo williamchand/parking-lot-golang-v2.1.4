@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"time"
 
 	"github.com/williamchand/parking-lot-golang-v2.1.4/parking_lot/domain"
 )
@@ -34,6 +35,7 @@ func (m *mysqlParkingLotRepository) fetch(ctx context.Context, query string, arg
 			&t.ID,
 			&t.RegistrationNumber,
 			&t.Colour,
+			&t.IsOccupied,
 			&t.CreatedAt,
 			&t.UpdatedAt,
 		)
@@ -104,7 +106,7 @@ func (m *mysqlParkingLotRepository) DeleteAllSlot(ctx context.Context) (err erro
 }
 
 func (m *mysqlParkingLotRepository) Store(ctx context.Context, a *domain.ParkingLot) (err error) {
-	query := `INSERT parking_lot SET id=?, registration_number=?, colour=?, is_occupied=?, created_at=?, updated_at=?`
+	query := `INSERT INTO parking_lot(id,registration_number,colour,is_occupied,created_at,updated_at) SET values(?, ?, ?, ?, ?, ?)`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return
@@ -138,10 +140,9 @@ func (m *mysqlParkingLotRepository) UpdateOccupied(ctx context.Context, ar *doma
 		err = fmt.Errorf("Weird  Behavior. Total Affected: %d", affect)
 		return
 	}
-
 	res, err = result.LastInsertId()
 	if err != nil {
-		err = fmt.Errorf("Weird  can't find last insert id: %d", affect)
+		err = fmt.Errorf("Weird  can't find last insert id: %d", res)
 		return
 	}
 	return
