@@ -8,7 +8,10 @@ WORKDIR /parking_lot
 
 COPY . .
 
+RUN make env
+
 RUN make engine
+
 
 # Distribution
 FROM alpine:latest

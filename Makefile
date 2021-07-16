@@ -17,7 +17,8 @@ docker:
 
 run:
 	docker-compose up --build -d
-
+env:
+	go env -w GOPRIVATE=github.com/williamchand
 stop:
 	docker-compose down
 
