@@ -44,7 +44,7 @@ func (a *parkingLotUsecase) FetchRegistrationNumber(c context.Context, colour st
 
 	res = []string{}
 	for _, element := range values {
-		res = append(res, element.RegistrationNumber)
+		res = append(res, *element.RegistrationNumber)
 	}
 
 	return
@@ -104,8 +104,8 @@ func (a *parkingLotUsecase) OccupyParkingLot(c context.Context, registrationNumb
 	ctx, cancel := context.WithTimeout(c, a.contextTimeout)
 	defer cancel()
 	ar := domain.ParkingLot{
-		RegistrationNumber: registrationNumber,
-		Colour: colour,
+		RegistrationNumber: &registrationNumber,
+		Colour: &colour,
 		UpdatedAt: time.Now(),
 	}
 	return a.parkingLotRepo.UpdateOccupied(ctx, &ar)

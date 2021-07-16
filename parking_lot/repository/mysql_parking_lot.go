@@ -25,7 +25,7 @@ func (m *mysqlParkingLotRepository) fetch(ctx context.Context, query string, arg
 	}
 
 	defer func() {
-		_ = rows.Close()
+		rows.Close()
 	}()
 
 	result = make([]domain.ParkingLot, 0)
@@ -43,8 +43,8 @@ func (m *mysqlParkingLotRepository) fetch(ctx context.Context, query string, arg
 		if err != nil {
 			return nil, err
 		}
+		result = append(result, t)
 	}
-
 	return result, nil
 }
 
@@ -54,7 +54,7 @@ func (m *mysqlParkingLotRepository) Fetch(ctx context.Context, colour *string) (
 		args = "and colour = ?"
 	}
 	query := fmt.Sprintf(`SELECT id,registration_number,colour, is_occupied, created_at, updated_at
-											 FROM parking_lot WHERE is_occupied = TRUE %s ORDER BY id`, args)
+											 FROM parking_lot WHERE is_occupied = true %s ORDER BY id`, args)
 	if colour != nil {
 		res, err = m.fetch(ctx, query, colour)
 	} else {
@@ -68,8 +68,8 @@ func (m *mysqlParkingLotRepository) Fetch(ctx context.Context, colour *string) (
 }
 
 func (m *mysqlParkingLotRepository) GetIdByRegistrationNumber(ctx context.Context, registrationNumber string) (res domain.ParkingLot, err error) {
-	query := `SELECT id,registration_number,colour, created_at, updated_at
-  						FROM parking_lot WHERE is_occupied = TRUE and registration_number = ?`
+	query := `SELECT id,registration_number,colour,is_occupied, created_at, updated_at
+  						FROM parking_lot WHERE is_occupied = true and registration_number = ?`
 
 	list, err := m.fetch(ctx, query, registrationNumber)
 	if err != nil {
@@ -106,7 +106,7 @@ func (m *mysqlParkingLotRepository) DeleteAllSlot(ctx context.Context) (err erro
 }
 
 func (m *mysqlParkingLotRepository) Store(ctx context.Context, a *domain.ParkingLot) (err error) {
-	query := `INSERT INTO parking_lot(id,registration_number,colour,is_occupied,created_at,updated_at) SET values(?, ?, ?, ?, ?, ?)`
+	query := `INSERT INTO parking_lot(id,registration_number,colour,is_occupied,created_at,updated_at) VALUES(?, ?, ?, ?, ?, ?)`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return
@@ -120,15 +120,27 @@ func (m *mysqlParkingLotRepository) Store(ctx context.Context, a *domain.Parking
 }
 
 func (m *mysqlParkingLotRepository) UpdateOccupied(ctx context.Context, ar *domain.ParkingLot) (res int64, err error) {
-	query := `UPDATE parking_lot set registration_number=?, colour=?, is_occupied=?, updated_at=?
-						WHERE id in (SELECT id FROM (SELECT id FROM parking_lot WHERE is_occupied=false ORDER BY id LIMIT 1) as t)`
+	query := `SELECT id, registration_number, colour, is_occupied, created_at, updated_at
+  						FROM parking_lot WHERE is_occupied=false ORDER BY id LIMIT 1`
+
+	insertableID, err := m.fetch(ctx, query)
+	if len(insertableID) == 0 {
+		err = domain.ErrNotFound
+		return
+	} 
+	if err != nil {
+		return
+	}
+	
+	query = `UPDATE parking_lot set registration_number=?, colour=?, is_occupied=TRUE, updated_at=?
+						WHERE id = ?`
 
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return
 	}
 
-	result, err := stmt.ExecContext(ctx, ar.RegistrationNumber, ar.Colour, true, ar.UpdatedAt)
+	result, err := stmt.ExecContext(ctx, ar.RegistrationNumber, ar.Colour, ar.UpdatedAt, insertableID[0].ID)
 	if err != nil {
 		return
 	}
@@ -137,27 +149,23 @@ func (m *mysqlParkingLotRepository) UpdateOccupied(ctx context.Context, ar *doma
 		return
 	}
 	if affect != 1 {
-		err = fmt.Errorf("Weird  Behavior. Total Affected: %d", affect)
+		err = domain.ErrNotFound
 		return
 	}
-	res, err = result.LastInsertId()
-	if err != nil {
-		err = fmt.Errorf("Weird  can't find last insert id: %d", res)
-		return
-	}
+	res = insertableID[0].ID
 	return
 }
 
 func (m *mysqlParkingLotRepository) UpdateUnOccupied(ctx context.Context, id int64, updatedAt time.Time) (err error) {
-	query := `UPDATE parking_lot set registration_number=NULL, colour=NULL, is_occupied=FALSE, updated_at = ?
-						WHERE id = ? and is_occupied=TRUE`
+	query := `UPDATE parking_lot set registration_number=NULL, colour=NULL, is_occupied=false, updated_at = ?
+						WHERE id = ? and is_occupied=true`
 
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return
 	}
 
-	res, err := stmt.ExecContext(ctx, id)
+	res, err := stmt.ExecContext(ctx, updatedAt, id )
 	if err != nil {
 		return
 	}
@@ -166,7 +174,7 @@ func (m *mysqlParkingLotRepository) UpdateUnOccupied(ctx context.Context, id int
 		return
 	}
 	if affect != 1 {
-		err = fmt.Errorf("Weird  Behavior. Total Affected: %d", affect)
+		err = domain.ErrNotFound
 		return
 	}
 
