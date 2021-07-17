@@ -1,221 +1,171 @@
 package usecase_test
 
+import (
+	"context"
+	"errors"
+	"testing"
+	"time"
 
-// import (
-// 	"context"
-// 	"errors"
-// 	"testing"
-// 	"time"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
-// 	"github.com/stretchr/testify/assert"
-// 	"github.com/stretchr/testify/mock"
+	"github.com/williamchand/parking-lot-golang-v2.1.4/parking_lot/domain"
+	"github.com/williamchand/parking-lot-golang-v2.1.4/parking_lot/domain/mocks"
+	ucase "github.com/williamchand/parking-lot-golang-v2.1.4/parking_lot/usecase"
+)
 
-// 	ucase "github.com/williamchand/parking-lot-golang-v2.1.4/parking_lot/article/usecase"
-// 	"github.com/williamchand/parking-lot-golang-v2.1.4/parking_lot/domain"
-// 	"github.com/williamchand/parking-lot-golang-v2.1.4/parking_lot/domain/mocks"
-// )
+func TestFetchStatus(t *testing.T) {
+	mockParkingLotRepo := new(mocks.ParkingLotRepository)
+	regNum1 := "B-1234-RFS"
+	regNum2 := "B-1234-RFK"
+	colour1 := "Black"
+	colour2 := "Black"
+	mockParkingLot := domain.ParkingLot{
+		ID:                 1,
+		RegistrationNumber: &regNum1,
+		Colour:             &colour1,
+		IsOccupied:         true,
+		UpdatedAt:          time.Now(),
+		CreatedAt:          time.Now(),
+	}
 
-// func TestFetch(t *testing.T) {
-// 	mockArticleRepo := new(mocks.ArticleRepository)
-// 	mockArticle := domain.Article{
-// 		Title:   "Hello",
-// 		Content: "Content",
-// 	}
+	mockParkingLot2 := domain.ParkingLot{
+		ID:                 2,
+		RegistrationNumber: &regNum2,
+		Colour:             &colour2,
+		IsOccupied:         true,
+		UpdatedAt:          time.Now(),
+		CreatedAt:          time.Now(),
+	}
+	mockListParkingLot := make([]domain.ParkingLot, 0)
+	mockListParkingLot = append(mockListParkingLot, mockParkingLot, mockParkingLot2)
 
-// 	mockListArtilce := make([]domain.Article, 0)
-// 	mockListArtilce = append(mockListArtilce, mockArticle)
+	t.Run("fetch status success", func(t *testing.T) {
+		mockParkingLotRepo.On("Fetch", mock.Anything, mock.Anything).Return(mockListParkingLot, nil).Once()
+		u := ucase.NewParkingLotUsecase(mockParkingLotRepo, time.Second*2)
+		list, err := u.FetchStatus(context.TODO())
+		assert.NoError(t, err)
+		assert.Len(t, list, len(mockListParkingLot))
+		mockParkingLotRepo.AssertExpectations(t)
+	})
 
-// 	t.Run("success", func(t *testing.T) {
-// 		mockArticleRepo.On("Fetch", mock.Anything, mock.AnythingOfType("string"),
-// 			mock.AnythingOfType("int64")).Return(mockListArtilce, "next-cursor", nil).Once()
-// 		mockAuthor := domain.Author{
-// 			ID:   1,
-// 			Name: "Iman Tumorang",
-// 		}
-// 		mockAuthorrepo := new(mocks.AuthorRepository)
-// 		mockAuthorrepo.On("GetByID", mock.Anything, mock.AnythingOfType("int64")).Return(mockAuthor, nil)
-// 		u := ucase.NewArticleUsecase(mockArticleRepo, mockAuthorrepo, time.Second*2)
-// 		num := int64(1)
-// 		cursor := "12"
-// 		list, nextCursor, err := u.Fetch(context.TODO(), cursor, num)
-// 		cursorExpected := "next-cursor"
-// 		assert.Equal(t, cursorExpected, nextCursor)
-// 		assert.NotEmpty(t, nextCursor)
-// 		assert.NoError(t, err)
-// 		assert.Len(t, list, len(mockListArtilce))
+	t.Run("FetchRegistrationNumber success", func(t *testing.T) {
+		mockParkingLotRepo.On("Fetch", mock.Anything, mock.Anything).Return(mockListParkingLot, nil).Once()
+		u := ucase.NewParkingLotUsecase(mockParkingLotRepo, time.Second*2)
+		list, err := u.FetchRegistrationNumber(context.TODO(), "Black")
+		assert.NoError(t, err)
+		assert.Len(t, list, len(mockListParkingLot))
+		mockParkingLotRepo.AssertExpectations(t)
+	})
 
-// 		mockArticleRepo.AssertExpectations(t)
-// 		mockAuthorrepo.AssertExpectations(t)
-// 	})
+	t.Run("FetchCarsSlot success", func(t *testing.T) {
+		mockParkingLotRepo.On("Fetch", mock.Anything, mock.Anything).Return(mockListParkingLot, nil).Once()
+		u := ucase.NewParkingLotUsecase(mockParkingLotRepo, time.Second*2)
+		list, err := u.FetchCarsSlot(context.TODO(), "Black")
+		assert.NoError(t, err)
+		assert.Len(t, list, len(mockListParkingLot))
+		mockParkingLotRepo.AssertExpectations(t)
+	})
+}
 
-// 	t.Run("error-failed", func(t *testing.T) {
-// 		mockArticleRepo.On("Fetch", mock.Anything, mock.AnythingOfType("string"),
-// 			mock.AnythingOfType("int64")).Return(nil, "", errors.New("Unexpexted Error")).Once()
+func TestGetIdByRegistrationNumber(t *testing.T) {
+	mockParkingLotRepo := new(mocks.ParkingLotRepository)
+	regNum1 := "B-1234-RFS"
+	colour1 := "Black"
+	mockParkingLot := domain.ParkingLot{
+		ID:                 1,
+		RegistrationNumber: &regNum1,
+		Colour:             &colour1,
+		IsOccupied:         true,
+		UpdatedAt:          time.Now(),
+		CreatedAt:          time.Now(),
+	}
 
-// 		mockAuthorrepo := new(mocks.AuthorRepository)
-// 		u := ucase.NewArticleUsecase(mockArticleRepo, mockAuthorrepo, time.Second*2)
-// 		num := int64(1)
-// 		cursor := "12"
-// 		list, nextCursor, err := u.Fetch(context.TODO(), cursor, num)
+	t.Run("success", func(t *testing.T) {
+		mockParkingLotRepo.On("GetIdByRegistrationNumber", mock.Anything, mock.AnythingOfType("string")).Return(mockParkingLot, nil).Once()
+		u := ucase.NewParkingLotUsecase(mockParkingLotRepo, time.Second*2)
 
-// 		assert.Empty(t, nextCursor)
-// 		assert.Error(t, err)
-// 		assert.Len(t, list, 0)
-// 		mockArticleRepo.AssertExpectations(t)
-// 		mockAuthorrepo.AssertExpectations(t)
-// 	})
+		a, err := u.GetIdByRegistrationNumber(context.TODO(), regNum1)
 
-// }
+		assert.NoError(t, err)
+		assert.Equal(t, a, mockParkingLot.ID)
+		mockParkingLotRepo.AssertExpectations(t)
+	})
 
-// func TestGetByID(t *testing.T) {
-// 	mockArticleRepo := new(mocks.ArticleRepository)
-// 	mockArticle := domain.Article{
-// 		Title:   "Hello",
-// 		Content: "Content",
-// 	}
-// 	mockAuthor := domain.Author{
-// 		ID:   1,
-// 		Name: "Iman Tumorang",
-// 	}
+	t.Run("error-failed", func(t *testing.T) {
+		mockParkingLotRepo.On("GetIdByRegistrationNumber", mock.Anything, mock.AnythingOfType("string")).Return(domain.ParkingLot{}, errors.New("Unexpected")).Once()
+		u := ucase.NewParkingLotUsecase(mockParkingLotRepo, time.Second*2)
 
-// 	t.Run("success", func(t *testing.T) {
-// 		mockArticleRepo.On("GetByID", mock.Anything, mock.AnythingOfType("int64")).Return(mockArticle, nil).Once()
-// 		mockAuthorrepo := new(mocks.AuthorRepository)
-// 		mockAuthorrepo.On("GetByID", mock.Anything, mock.AnythingOfType("int64")).Return(mockAuthor, nil)
-// 		u := ucase.NewArticleUsecase(mockArticleRepo, mockAuthorrepo, time.Second*2)
+		_, err := u.GetIdByRegistrationNumber(context.TODO(), regNum1)
 
-// 		a, err := u.GetByID(context.TODO(), mockArticle.ID)
+		assert.Error(t, err)
+		mockParkingLotRepo.AssertExpectations(t)
+	})
+}
 
-// 		assert.NoError(t, err)
-// 		assert.NotNil(t, a)
+func TestCreateParkingLot(t *testing.T) {
+	mockParkingLotRepo := new(mocks.ParkingLotRepository)
 
-// 		mockArticleRepo.AssertExpectations(t)
-// 		mockAuthorrepo.AssertExpectations(t)
-// 	})
-// 	t.Run("error-failed", func(t *testing.T) {
-// 		mockArticleRepo.On("GetByID", mock.Anything, mock.AnythingOfType("int64")).Return(domain.Article{}, errors.New("Unexpected")).Once()
+	t.Run("success", func(t *testing.T) {
+		mockParkingLotRepo.On("DeleteAllSlot", mock.Anything).Return(nil).Once()
+		mockParkingLotRepo.On("Store", mock.Anything, mock.AnythingOfType("*domain.ParkingLot")).Return(nil).Times(6)
 
-// 		mockAuthorrepo := new(mocks.AuthorRepository)
-// 		u := ucase.NewArticleUsecase(mockArticleRepo, mockAuthorrepo, time.Second*2)
+		u := ucase.NewParkingLotUsecase(mockParkingLotRepo, time.Second*2)
 
-// 		a, err := u.GetByID(context.TODO(), mockArticle.ID)
+		err := u.CreateParkingLot(context.TODO(), int64(6))
 
-// 		assert.Error(t, err)
-// 		assert.Equal(t, domain.Article{}, a)
+		assert.NoError(t, err)
+		mockParkingLotRepo.AssertExpectations(t)
+	})
+}
 
-// 		mockArticleRepo.AssertExpectations(t)
-// 		mockAuthorrepo.AssertExpectations(t)
-// 	})
+func TestOccupyParkingLot(t *testing.T) {
+	mockParkingLotRepo := new(mocks.ParkingLotRepository)
+	regNum1 := "B-1234-RFS"
+	colour1 := "Black"
 
-// }
+	t.Run("success", func(t *testing.T) {
+		mockParkingLotRepo.On("UpdateOccupied", mock.Anything, mock.AnythingOfType("*domain.ParkingLot")).Return(int64(2), nil).Once()
 
-// func TestStore(t *testing.T) {
-// 	mockArticleRepo := new(mocks.ArticleRepository)
-// 	mockArticle := domain.Article{
-// 		Title:   "Hello",
-// 		Content: "Content",
-// 	}
+		u := ucase.NewParkingLotUsecase(mockParkingLotRepo, time.Second*2)
 
-// 	t.Run("success", func(t *testing.T) {
-// 		tempMockArticle := mockArticle
-// 		tempMockArticle.ID = 0
-// 		mockArticleRepo.On("GetByTitle", mock.Anything, mock.AnythingOfType("string")).Return(domain.Article{}, domain.ErrNotFound).Once()
-// 		mockArticleRepo.On("Store", mock.Anything, mock.AnythingOfType("*domain.Article")).Return(nil).Once()
+		res, err := u.OccupyParkingLot(context.TODO(), regNum1, colour1)
 
-// 		mockAuthorrepo := new(mocks.AuthorRepository)
-// 		u := ucase.NewArticleUsecase(mockArticleRepo, mockAuthorrepo, time.Second*2)
+		assert.NoError(t, err)
+		assert.Equal(t, res, int64(2))
+		mockParkingLotRepo.AssertExpectations(t)
+	})
+	t.Run("error-failed", func(t *testing.T) {
+		mockParkingLotRepo.On("UpdateOccupied", mock.Anything, mock.AnythingOfType("*domain.ParkingLot")).Return(int64(0), errors.New("Unexpected")).Once()
+		u := ucase.NewParkingLotUsecase(mockParkingLotRepo, time.Second*2)
 
-// 		err := u.Store(context.TODO(), &tempMockArticle)
+		_, err := u.OccupyParkingLot(context.TODO(), regNum1, colour1)
 
-// 		assert.NoError(t, err)
-// 		assert.Equal(t, mockArticle.Title, tempMockArticle.Title)
-// 		mockArticleRepo.AssertExpectations(t)
-// 	})
-// 	t.Run("existing-title", func(t *testing.T) {
-// 		existingArticle := mockArticle
-// 		mockArticleRepo.On("GetByTitle", mock.Anything, mock.AnythingOfType("string")).Return(existingArticle, nil).Once()
-// 		mockAuthor := domain.Author{
-// 			ID:   1,
-// 			Name: "Iman Tumorang",
-// 		}
-// 		mockAuthorrepo := new(mocks.AuthorRepository)
-// 		mockAuthorrepo.On("GetByID", mock.Anything, mock.AnythingOfType("int64")).Return(mockAuthor, nil)
+		assert.Error(t, err)
+		mockParkingLotRepo.AssertExpectations(t)
+	})
+}
 
-// 		u := ucase.NewArticleUsecase(mockArticleRepo, mockAuthorrepo, time.Second*2)
+func TestUnOccupyParkingLot(t *testing.T) {
+	mockParkingLotRepo := new(mocks.ParkingLotRepository)
 
-// 		err := u.Store(context.TODO(), &mockArticle)
+	t.Run("success", func(t *testing.T) {
+		mockParkingLotRepo.On("UpdateUnOccupied", mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
 
-// 		assert.Error(t, err)
-// 		mockArticleRepo.AssertExpectations(t)
-// 		mockAuthorrepo.AssertExpectations(t)
-// 	})
+		u := ucase.NewParkingLotUsecase(mockParkingLotRepo, time.Second*2)
 
-// }
+		err := u.UnOccupyParkingLot(context.TODO(), int64(2))
 
-// func TestDelete(t *testing.T) {
-// 	mockArticleRepo := new(mocks.ArticleRepository)
-// 	mockArticle := domain.Article{
-// 		Title:   "Hello",
-// 		Content: "Content",
-// 	}
+		assert.NoError(t, err)
+		mockParkingLotRepo.AssertExpectations(t)
+	})
+	t.Run("error-failed", func(t *testing.T) {
+		mockParkingLotRepo.On("UpdateUnOccupied", mock.Anything, mock.Anything, mock.Anything).Return(errors.New("Unexpected")).Once()
+		u := ucase.NewParkingLotUsecase(mockParkingLotRepo, time.Second*2)
 
-// 	t.Run("success", func(t *testing.T) {
-// 		mockArticleRepo.On("GetByID", mock.Anything, mock.AnythingOfType("int64")).Return(mockArticle, nil).Once()
+		err := u.UnOccupyParkingLot(context.TODO(), int64(2))
 
-// 		mockArticleRepo.On("Delete", mock.Anything, mock.AnythingOfType("int64")).Return(nil).Once()
-
-// 		mockAuthorrepo := new(mocks.AuthorRepository)
-// 		u := ucase.NewArticleUsecase(mockArticleRepo, mockAuthorrepo, time.Second*2)
-
-// 		err := u.Delete(context.TODO(), mockArticle.ID)
-
-// 		assert.NoError(t, err)
-// 		mockArticleRepo.AssertExpectations(t)
-// 		mockAuthorrepo.AssertExpectations(t)
-// 	})
-// 	t.Run("article-is-not-exist", func(t *testing.T) {
-// 		mockArticleRepo.On("GetByID", mock.Anything, mock.AnythingOfType("int64")).Return(domain.Article{}, nil).Once()
-
-// 		mockAuthorrepo := new(mocks.AuthorRepository)
-// 		u := ucase.NewArticleUsecase(mockArticleRepo, mockAuthorrepo, time.Second*2)
-
-// 		err := u.Delete(context.TODO(), mockArticle.ID)
-
-// 		assert.Error(t, err)
-// 		mockArticleRepo.AssertExpectations(t)
-// 		mockAuthorrepo.AssertExpectations(t)
-// 	})
-// 	t.Run("error-happens-in-db", func(t *testing.T) {
-// 		mockArticleRepo.On("GetByID", mock.Anything, mock.AnythingOfType("int64")).Return(domain.Article{}, errors.New("Unexpected Error")).Once()
-
-// 		mockAuthorrepo := new(mocks.AuthorRepository)
-// 		u := ucase.NewArticleUsecase(mockArticleRepo, mockAuthorrepo, time.Second*2)
-
-// 		err := u.Delete(context.TODO(), mockArticle.ID)
-
-// 		assert.Error(t, err)
-// 		mockArticleRepo.AssertExpectations(t)
-// 		mockAuthorrepo.AssertExpectations(t)
-// 	})
-
-// }
-
-// func TestUpdate(t *testing.T) {
-// 	mockArticleRepo := new(mocks.ArticleRepository)
-// 	mockArticle := domain.Article{
-// 		Title:   "Hello",
-// 		Content: "Content",
-// 		ID:      23,
-// 	}
-
-// 	t.Run("success", func(t *testing.T) {
-// 		mockArticleRepo.On("Update", mock.Anything, &mockArticle).Once().Return(nil)
-
-// 		mockAuthorrepo := new(mocks.AuthorRepository)
-// 		u := ucase.NewArticleUsecase(mockArticleRepo, mockAuthorrepo, time.Second*2)
-
-// 		err := u.Update(context.TODO(), &mockArticle)
-// 		assert.NoError(t, err)
-// 		mockArticleRepo.AssertExpectations(t)
-// 	})
-// }
+		assert.Error(t, err)
+		mockParkingLotRepo.AssertExpectations(t)
+	})
+}

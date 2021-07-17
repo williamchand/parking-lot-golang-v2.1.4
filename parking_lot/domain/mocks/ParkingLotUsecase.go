@@ -140,7 +140,7 @@ func (_m *ParkingLotUsecase) OccupyParkingLot(ctx context.Context, registrationN
 }
 
 // UnOccupyParkingLot provides a mock function with given fields: ctx, id
-func (_m *ParkingLotUsecase) UnOccupyParkingLot(ctx context.Context, id int64 ) error {
+func (_m *ParkingLotUsecase) UnOccupyParkingLot(ctx context.Context, id int64) error {
 	ret := _m.Called(ctx, id)
 
 	var r0 error

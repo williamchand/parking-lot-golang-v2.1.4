@@ -8,6 +8,7 @@ WORKDIR /parking_lot
 
 COPY . .
 
+RUN CGO_ENABLED=0 make test
 RUN make engine
 
 

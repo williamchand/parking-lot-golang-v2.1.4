@@ -6,12 +6,12 @@ import (
 )
 
 type ParkingLot struct {
-	ID        					int64     `json:"id"`
-	RegistrationNumber  *string    `json:"registration_number"`
-	Colour   						*string    `json:"colour"`
-	IsOccupied 					bool    	`json:"is_occupied"`
-	UpdatedAt 					time.Time `json:"updated_at"`
-	CreatedAt 					time.Time `json:"created_at"`
+	ID                 int64     `json:"id"`
+	RegistrationNumber *string   `json:"registration_number"`
+	Colour             *string   `json:"colour"`
+	IsOccupied         bool      `json:"is_occupied"`
+	UpdatedAt          time.Time `json:"updated_at"`
+	CreatedAt          time.Time `json:"created_at"`
 }
 
 type ParkingLotUsecase interface {

@@ -1,12 +1,13 @@
 package delivery
 
 import (
+	"bytes"
+	"fmt"
+	"io/ioutil"
 	"net/http"
 	"strconv"
-	"fmt"
 	"strings"
-	"bytes"
-	"io/ioutil"
+
 	"github.com/spf13/viper"
 
 	"github.com/labstack/echo"
@@ -14,16 +15,17 @@ import (
 	"github.com/williamchand/parking-lot-golang-v2.1.4/parking_lot/domain"
 )
 
-
 // ParkingLotHandler  represent the httphandler for parking lot
 type ParkingLotHandler struct {
 	PUsecase domain.ParkingLotUsecase
+	Client   domain.HTTPClient
 }
 
 // NewParkingLotHandler will initialize the Parking lot/ resources endpoint
 func NewParkingLotHandler(e *echo.Echo, us domain.ParkingLotUsecase) {
 	handler := &ParkingLotHandler{
 		PUsecase: us,
+		Client:   &http.Client{},
 	}
 	e.POST("/create_parking_lot/:parking_lot", handler.CreateParkingLot)
 	e.POST("/park/:registration_number/:colour", handler.OccupyParkingLot)
@@ -43,7 +45,7 @@ func (a *ParkingLotHandler) CreateParkingLot(c echo.Context) error {
 
 	err := a.PUsecase.CreateParkingLot(ctx, int64(num))
 	if err != nil {
-		return c.JSON(getStatusCode(err),  err.Error())
+		return c.JSON(getStatusCode(err), err.Error())
 	}
 	response := fmt.Sprintf("Created a parking lot with %d slots\n", num)
 
@@ -57,10 +59,10 @@ func (a *ParkingLotHandler) OccupyParkingLot(c echo.Context) error {
 	ctx := c.Request().Context()
 
 	slot_number, err := a.PUsecase.OccupyParkingLot(ctx, regNum, colour)
-	if err == domain.ErrNotFound { 
-		return c.String(getStatusCode(err),  "Sorry, parking lot is full\n")
+	if err == domain.ErrNotFound {
+		return c.String(getStatusCode(err), "Sorry, parking lot is full\n")
 	} else if err != nil {
-		return c.JSON(getStatusCode(err),  err.Error())
+		return c.JSON(getStatusCode(err), err.Error())
 	}
 	response := fmt.Sprintf("Allocated slot number: %d\n", slot_number)
 
@@ -74,10 +76,10 @@ func (a *ParkingLotHandler) UnOccupyParkingLot(c echo.Context) error {
 	ctx := c.Request().Context()
 
 	err := a.PUsecase.UnOccupyParkingLot(ctx, int64(num))
-	if err == domain.ErrNotFound { 
-		return c.String(getStatusCode(err),  "Not found\n")
+	if err == domain.ErrNotFound {
+		return c.String(getStatusCode(err), "Not found\n")
 	} else if err != nil {
-		return c.JSON(getStatusCode(err),  err.Error())
+		return c.JSON(getStatusCode(err), err.Error())
 	}
 	response := fmt.Sprintf("Slot number %d is free\n", num)
 
@@ -90,12 +92,12 @@ func (a *ParkingLotHandler) FetchStatus(c echo.Context) error {
 
 	listAr, err := a.PUsecase.FetchStatus(ctx)
 	if err != nil {
-		return c.JSON(getStatusCode(err),  err.Error())
+		return c.JSON(getStatusCode(err), err.Error())
 	}
 
-	response := fmt.Sprintf("Slot No. Registration No Colour\n")
+	response := "Slot No. Registration No Colour\n"
 	for _, element := range listAr {
-		response = response + fmt.Sprintf("%d %s %s\n",element.ID,*element.RegistrationNumber,*element.Colour)
+		response = response + fmt.Sprintf("%d %s %s\n", element.ID, *element.RegistrationNumber, *element.Colour)
 	}
 	return c.String(http.StatusOK, response)
 }
@@ -107,10 +109,10 @@ func (a *ParkingLotHandler) FetchRegistrationNumber(c echo.Context) error {
 
 	listAr, err := a.PUsecase.FetchRegistrationNumber(ctx, colour)
 	if err != nil {
-		return c.JSON(getStatusCode(err),  err.Error())
+		return c.JSON(getStatusCode(err), err.Error())
 	}
 
-	return c.String(http.StatusOK, strings.Join(listAr, ", ") + "\n")
+	return c.String(http.StatusOK, strings.Join(listAr, ", ")+"\n")
 }
 
 // FetchCarsSlot will fetch the FetchCarsSlot based on given params
@@ -120,21 +122,22 @@ func (a *ParkingLotHandler) FetchCarsSlot(c echo.Context) error {
 
 	listAr, err := a.PUsecase.FetchCarsSlot(ctx, colour)
 	if err != nil {
-		return c.JSON(getStatusCode(err),  err.Error())
+		return c.JSON(getStatusCode(err), err.Error())
 	}
 
-	return c.String(http.StatusOK, strings.Join(listAr, ", ") + "\n")
+	return c.String(http.StatusOK, strings.Join(listAr, ", ")+"\n")
 }
+
 // GetByID will get article by given id
 func (a *ParkingLotHandler) GetIdByRegistrationNumber(c echo.Context) error {
 	regNum := c.Param("registration_number")
 	ctx := c.Request().Context()
 
 	registrationNumber, err := a.PUsecase.GetIdByRegistrationNumber(ctx, regNum)
-	if err == domain.ErrNotFound { 
-		return c.String(getStatusCode(err),  "Not found\n")
+	if err == domain.ErrNotFound {
+		return c.String(getStatusCode(err), "Not found\n")
 	} else if err != nil {
-		return c.JSON(getStatusCode(err),  err.Error())
+		return c.JSON(getStatusCode(err), err.Error())
 	}
 
 	response := fmt.Sprintf("%d\n", registrationNumber)
@@ -164,32 +167,33 @@ func (a *ParkingLotHandler) Bulk(c echo.Context) error {
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(request)
 	newStr := buf.String()
-	temp := strings.Split(newStr,"\n")
+	temp := strings.Split(newStr, "\n")
 	response := []string{}
-	address :=  "http://localhost" + viper.GetString("server.address")
+	address := "http://localhost" + viper.GetString("server.address")
 	for _, element := range temp {
-		redirectString := strings.Split(element," ")
-		resp := &http.Response{}
+		redirectString := strings.Split(element, " ")
+		req := &http.Request{}
 		switch redirectString[0] {
 		case "create_parking_lot":
-			resp, _ = http.Post(address+"/create_parking_lot/"+redirectString[1], "text/plain", nil)
+			req, _ = http.NewRequest(http.MethodPost, address+"/create_parking_lot/"+redirectString[1], nil)
 		case "park":
-			resp, _ = http.Post(address+"/park/"+redirectString[1]+ "/" + redirectString[2], "text/plain", nil)
+			req, _ = http.NewRequest(http.MethodPost, address+"/park/"+redirectString[1]+"/"+redirectString[2], nil)
 		case "leave":
-			resp, _ = http.Post(address+"/leave/"+redirectString[1], "text/plain", nil)
+			req, _ = http.NewRequest(http.MethodPost, address+"/leave/"+redirectString[1], nil)
 		case "status":
-			resp, _ = http.Get(address+"/status")
+			req, _ = http.NewRequest(http.MethodGet, address+"/status", nil)
 		case "registration_numbers_for_cars_with_colour":
-			resp, _ = http.Get(address+"/cars_registration_numbers/colour/"+redirectString[1])
+			req, _ = http.NewRequest(http.MethodGet, address+"/cars_registration_numbers/colour/"+redirectString[1], nil)
 		case "slot_numbers_for_cars_with_colour":
-			resp, _ = http.Get(address+"/cars_slot/colour/"+redirectString[1])
+			req, _ = http.NewRequest(http.MethodGet, address+"/cars_slot/colour/"+redirectString[1], nil)
 		case "slot_number_for_registration_number":
-			resp, _ = http.Get(address+"/slot_number/car_registration_number/"+redirectString[1])
+			req, _ = http.NewRequest(http.MethodGet, address+"/slot_number/car_registration_number/"+redirectString[1], nil)
 		}
+		resp, _ := a.Client.Do(req)
 		defer resp.Body.Close()
 		body, _ := ioutil.ReadAll(resp.Body)
 		response = append(response, string(body))
 	}
 
-	return c.String(http.StatusOK, strings.Join(response,""))
+	return c.String(http.StatusOK, strings.Join(response, ""))
 }

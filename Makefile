@@ -1,6 +1,6 @@
 BINARY=engine
 test: 
-	go test -v -cover -covermode=atomic ./...
+	go test ./... 
 
 engine:
 	go build -o ${BINARY} parking_lot/*.go

@@ -1,164 +1,259 @@
 package repository_test
 
-// import (
-// 	"context"
-// 	"testing"
-// 	"time"
+import (
+	"context"
+	"testing"
+	"time"
 
-// 	"github.com/stretchr/testify/assert"
-// 	sqlmock "gopkg.in/DATA-DOG/go-sqlmock.v1"
+	"github.com/stretchr/testify/assert"
+	sqlmock "gopkg.in/DATA-DOG/go-sqlmock.v1"
 
-// 	"github.com/williamchand/parking-lot-golang-v2.1.4/parking_lot/repository"
-// 	"github.com/williamchand/parking-lot-golang-v2.1.4/parking_lot/domain"
-// )
+	"github.com/williamchand/parking-lot-golang-v2.1.4/parking_lot/domain"
+	parkingLotMysqlRepo "github.com/williamchand/parking-lot-golang-v2.1.4/parking_lot/repository"
+)
 
-// func TestFetch(t *testing.T) {
-// 	db, mock, err := sqlmock.New()
-// 	if err != nil {
-// 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
-// 	}
+func TestFetchStatus(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	regNum1 := "B-1234-RFS"
+	regNum2 := "B-1999-RFD"
+	colour1 := "Black"
+	colour2 := "Green"
+	mockParkingLot := []domain.ParkingLot{
+		{
+			ID:                 1,
+			RegistrationNumber: &regNum1,
+			Colour:             &colour1,
+			IsOccupied:         true,
+			UpdatedAt:          time.Now(),
+			CreatedAt:          time.Now(),
+		},
+		{
+			ID:                 3,
+			RegistrationNumber: &regNum2,
+			Colour:             &colour2,
+			IsOccupied:         true,
+			UpdatedAt:          time.Now(),
+			CreatedAt:          time.Now(),
+		},
+	}
 
-// 	mockArticles := []domain.Article{
-// 		domain.Article{
-// 			ID: 1, Title: "title 1", Content: "content 1",
-// 			Author: domain.Author{ID: 1}, UpdatedAt: time.Now(), CreatedAt: time.Now(),
-// 		},
-// 		domain.Article{
-// 			ID: 2, Title: "title 2", Content: "content 2",
-// 			Author: domain.Author{ID: 1}, UpdatedAt: time.Now(), CreatedAt: time.Now(),
-// 		},
-// 	}
+	rows := sqlmock.NewRows([]string{"id", "registration_number", "colour", "is_occupied", "created_at", "updated_at"}).
+		AddRow(mockParkingLot[0].ID, mockParkingLot[0].RegistrationNumber, mockParkingLot[0].Colour,
+			mockParkingLot[0].IsOccupied, mockParkingLot[0].CreatedAt, mockParkingLot[0].UpdatedAt).
+		AddRow(mockParkingLot[1].ID, mockParkingLot[1].RegistrationNumber, mockParkingLot[1].Colour,
+			mockParkingLot[1].IsOccupied, mockParkingLot[1].CreatedAt, mockParkingLot[1].UpdatedAt)
 
-// 	rows := sqlmock.NewRows([]string{"id", "title", "content", "author_id", "updated_at", "created_at"}).
-// 		AddRow(mockArticles[0].ID, mockArticles[0].Title, mockArticles[0].Content,
-// 			mockArticles[0].Author.ID, mockArticles[0].UpdatedAt, mockArticles[0].CreatedAt).
-// 		AddRow(mockArticles[1].ID, mockArticles[1].Title, mockArticles[1].Content,
-// 			mockArticles[1].Author.ID, mockArticles[1].UpdatedAt, mockArticles[1].CreatedAt)
+	query := `SELECT id, registration_number, colour, is_occupied, created_at, updated_at
+						FROM parking_lot WHERE is_occupied = true ORDER BY id`
 
-// 	query := "SELECT id,title,content, author_id, updated_at, created_at FROM article WHERE created_at > \\? ORDER BY created_at LIMIT \\?"
+	mock.ExpectQuery(query).WillReturnRows(rows)
+	a := parkingLotMysqlRepo.NewMysqlParkingLotRepository(db)
+	list, err := a.Fetch(context.TODO(), nil)
+	assert.NoError(t, err)
+	assert.Len(t, list, 2)
+}
 
-// 	mock.ExpectQuery(query).WillReturnRows(rows)
-// 	a := articleMysqlRepo.NewMysqlArticleRepository(db)
-// 	cursor := repository.EncodeCursor(mockArticles[1].CreatedAt)
-// 	num := int64(2)
-// 	list, nextCursor, err := a.Fetch(context.TODO(), cursor, num)
-// 	assert.NotEmpty(t, nextCursor)
-// 	assert.NoError(t, err)
-// 	assert.Len(t, list, 2)
-// }
+func TestFetchByColour(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	regNum1 := "B-1234-RFS"
+	regNum2 := "B-1999-RFD"
+	colour1 := "Black"
+	mockParkingLot := []domain.ParkingLot{
+		domain.ParkingLot{
+			ID:                 1,
+			RegistrationNumber: &regNum1,
+			Colour:             &colour1,
+			IsOccupied:         true,
+			UpdatedAt:          time.Now(),
+			CreatedAt:          time.Now(),
+		},
+		domain.ParkingLot{
+			ID:                 3,
+			RegistrationNumber: &regNum2,
+			Colour:             &colour1,
+			IsOccupied:         true,
+			UpdatedAt:          time.Now(),
+			CreatedAt:          time.Now(),
+		},
+	}
 
-// func TestGetByID(t *testing.T) {
-// 	db, mock, err := sqlmock.New()
-// 	if err != nil {
-// 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
-// 	}
+	rows := sqlmock.NewRows([]string{"id", "registration_number", "colour", "is_occupied", "created_at", "updated_at"}).
+		AddRow(mockParkingLot[0].ID, mockParkingLot[0].RegistrationNumber, mockParkingLot[0].Colour,
+			mockParkingLot[0].IsOccupied, mockParkingLot[0].CreatedAt, mockParkingLot[0].UpdatedAt).
+		AddRow(mockParkingLot[1].ID, mockParkingLot[1].RegistrationNumber, mockParkingLot[1].Colour,
+			mockParkingLot[1].IsOccupied, mockParkingLot[1].CreatedAt, mockParkingLot[1].UpdatedAt)
 
-// 	rows := sqlmock.NewRows([]string{"id", "title", "content", "author_id", "updated_at", "created_at"}).
-// 		AddRow(1, "title 1", "Content 1", 1, time.Now(), time.Now())
+	query := `SELECT id, registration_number, colour, is_occupied, created_at, updated_at
+						FROM parking_lot WHERE is_occupied = true and colour = \? ORDER BY id`
 
-// 	query := "SELECT id,title,content, author_id, updated_at, created_at FROM article WHERE ID = \\?"
+	mock.ExpectQuery(query).WillReturnRows(rows)
+	a := parkingLotMysqlRepo.NewMysqlParkingLotRepository(db)
+	list, err := a.Fetch(context.TODO(), &colour1)
+	assert.NoError(t, err)
+	assert.Len(t, list, 2)
+}
 
-// 	mock.ExpectQuery(query).WillReturnRows(rows)
-// 	a := articleMysqlRepo.NewMysqlArticleRepository(db)
+func TestGetIdByRegistrationNumber(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
 
-// 	num := int64(5)
-// 	anArticle, err := a.GetByID(context.TODO(), num)
-// 	assert.NoError(t, err)
-// 	assert.NotNil(t, anArticle)
-// }
+	regNum1 := "B-1999-RFD"
+	colour1 := "Black"
+	rows := sqlmock.NewRows([]string{"id", "registration_number", "colour", "is_occupied", "updated_at", "created_at"}).
+		AddRow(1, &regNum1, &colour1,
+			true, time.Now(), time.Now())
 
-// func TestStore(t *testing.T) {
-// 	now := time.Now()
-// 	ar := &domain.Article{
-// 		Title:     "Judul",
-// 		Content:   "Content",
-// 		CreatedAt: now,
-// 		UpdatedAt: now,
-// 		Author: domain.Author{
-// 			ID:   1,
-// 			Name: "Iman Tumorang",
-// 		},
-// 	}
-// 	db, mock, err := sqlmock.New()
-// 	if err != nil {
-// 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
-// 	}
+	query := `SELECT id, registration_number, colour, is_occupied, created_at, updated_at
+						FROM parking_lot WHERE is_occupied = true and registration_number = \?`
+	mock.ExpectQuery(query).WillReturnRows(rows)
+	a := parkingLotMysqlRepo.NewMysqlParkingLotRepository(db)
+	list, err := a.GetIdByRegistrationNumber(context.TODO(), regNum1)
+	assert.NoError(t, err)
+	assert.NotNil(t, list)
+}
 
-// 	query := "INSERT  article SET title=\\? , content=\\? , author_id=\\?, updated_at=\\? , created_at=\\?"
-// 	prep := mock.ExpectPrepare(query)
-// 	prep.ExpectExec().WithArgs(ar.Title, ar.Content, ar.Author.ID, ar.CreatedAt, ar.UpdatedAt).WillReturnResult(sqlmock.NewResult(12, 1))
+func TestGetIdByRegistrationNumberError(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
 
-// 	a := articleMysqlRepo.NewMysqlArticleRepository(db)
+	regNum1 := "B-1999-RFD"
+	rows := sqlmock.NewRows([]string{"id", "registration_number", "colour", "is_occupied", "updated_at", "created_at"})
 
-// 	err = a.Store(context.TODO(), ar)
-// 	assert.NoError(t, err)
-// 	assert.Equal(t, int64(12), ar.ID)
-// }
+	query := `SELECT id, registration_number, colour, is_occupied, created_at, updated_at
+						FROM parking_lot WHERE is_occupied = true and registration_number = \?`
+	mock.ExpectQuery(query).WillReturnRows(rows)
+	a := parkingLotMysqlRepo.NewMysqlParkingLotRepository(db)
+	_, err = a.GetIdByRegistrationNumber(context.TODO(), regNum1)
+	assert.Error(t, err)
+}
 
-// func TestGetByTitle(t *testing.T) {
-// 	db, mock, err := sqlmock.New()
-// 	if err != nil {
-// 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
-// 	}
+func TestDeleteAllSlot(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
 
-// 	rows := sqlmock.NewRows([]string{"id", "title", "content", "author_id", "updated_at", "created_at"}).
-// 		AddRow(1, "title 1", "Content 1", 1, time.Now(), time.Now())
+	query := `DELETE FROM parking_lot`
+	prep := mock.ExpectPrepare(query)
+	prep.ExpectExec().WillReturnResult(sqlmock.NewResult(6, 1))
 
-// 	query := "SELECT id,title,content, author_id, updated_at, created_at FROM article WHERE title = \\?"
+	a := parkingLotMysqlRepo.NewMysqlParkingLotRepository(db)
 
-// 	mock.ExpectQuery(query).WillReturnRows(rows)
-// 	a := articleMysqlRepo.NewMysqlArticleRepository(db)
+	err = a.DeleteAllSlot(context.TODO())
+	assert.NoError(t, err)
+}
 
-// 	title := "title 1"
-// 	anArticle, err := a.GetByTitle(context.TODO(), title)
-// 	assert.NoError(t, err)
-// 	assert.NotNil(t, anArticle)
-// }
+func TestStore(t *testing.T) {
+	ar := &domain.ParkingLot{
+		ID:                 1,
+		RegistrationNumber: nil,
+		Colour:             nil,
+		IsOccupied:         false,
+		UpdatedAt:          time.Now(),
+		CreatedAt:          time.Now(),
+	}
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
 
-// func TestDelete(t *testing.T) {
-// 	db, mock, err := sqlmock.New()
-// 	if err != nil {
-// 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
-// 	}
+	query := "INSERT parking_lot SET id=\\? , registration_number=\\? , colour=\\?, is_occupied=\\?, updated_at=\\? , created_at=\\?"
 
-// 	query := "DELETE FROM article WHERE id = \\?"
+	prep := mock.ExpectPrepare(query)
+	prep.ExpectExec().WithArgs(ar.ID, ar.RegistrationNumber, ar.Colour, ar.IsOccupied, ar.CreatedAt, ar.UpdatedAt).WillReturnResult(sqlmock.NewResult(1, 1))
 
-// 	prep := mock.ExpectPrepare(query)
-// 	prep.ExpectExec().WithArgs(12).WillReturnResult(sqlmock.NewResult(12, 1))
+	a := parkingLotMysqlRepo.NewMysqlParkingLotRepository(db)
 
-// 	a := articleMysqlRepo.NewMysqlArticleRepository(db)
+	err = a.Store(context.TODO(), ar)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(1), ar.ID)
+}
 
-// 	num := int64(12)
-// 	err = a.Delete(context.TODO(), num)
-// 	assert.NoError(t, err)
-// }
+func TestUpdateOccupied(t *testing.T) {
+	regNum1 := "B-1999-RFD"
+	colour1 := "Black"
+	ar := &domain.ParkingLot{
+		RegistrationNumber: &regNum1,
+		Colour:             &colour1,
+		UpdatedAt:          time.Now(),
+		CreatedAt:          time.Now(),
+	}
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
 
-// func TestUpdate(t *testing.T) {
-// 	now := time.Now()
-// 	ar := &domain.Article{
-// 		ID:        12,
-// 		Title:     "Judul",
-// 		Content:   "Content",
-// 		CreatedAt: now,
-// 		UpdatedAt: now,
-// 		Author: domain.Author{
-// 			ID:   1,
-// 			Name: "Iman Tumorang",
-// 		},
-// 	}
+	rows := sqlmock.NewRows([]string{"id", "registration_number", "colour", "is_occupied", "updated_at", "created_at"}).
+		AddRow(1, nil, nil,
+			false, time.Now(), time.Now())
 
-// 	db, mock, err := sqlmock.New()
-// 	if err != nil {
-// 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
-// 	}
+	query := `SELECT id, registration_number, colour, is_occupied, created_at, updated_at
+  						FROM parking_lot WHERE is_occupied=false ORDER BY id LIMIT 1`
+	mock.ExpectQuery(query).WillReturnRows(rows)
 
-// 	query := "UPDATE article set title=\\?, content=\\?, author_id=\\?, updated_at=\\? WHERE ID = \\?"
+	query = `UPDATE parking_lot set registration_number=\?, colour=\?, is_occupied=TRUE, updated_at=\?
+						WHERE id = \?`
 
-// 	prep := mock.ExpectPrepare(query)
-// 	prep.ExpectExec().WithArgs(ar.Title, ar.Content, ar.Author.ID, ar.UpdatedAt, ar.ID).WillReturnResult(sqlmock.NewResult(12, 1))
+	prep := mock.ExpectPrepare(query)
+	prep.ExpectExec().WithArgs(ar.RegistrationNumber, ar.Colour, ar.UpdatedAt, 1).WillReturnResult(sqlmock.NewResult(1, 1))
 
-// 	a := articleMysqlRepo.NewMysqlArticleRepository(db)
+	a := parkingLotMysqlRepo.NewMysqlParkingLotRepository(db)
 
-// 	err = a.Update(context.TODO(), ar)
-// 	assert.NoError(t, err)
-// }
+	res, err := a.UpdateOccupied(context.TODO(), ar)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(1), res)
+}
+
+func TestUpdateOccupiedFailed(t *testing.T) {
+	regNum1 := "B-1999-RFD"
+	colour1 := "Black"
+	ar := &domain.ParkingLot{
+		RegistrationNumber: &regNum1,
+		Colour:             &colour1,
+		UpdatedAt:          time.Now(),
+		CreatedAt:          time.Now(),
+	}
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+
+	rows := sqlmock.NewRows([]string{"id", "registration_number", "colour", "is_occupied", "updated_at", "created_at"})
+
+	query := `SELECT id, registration_number, colour, is_occupied, created_at, updated_at
+  						FROM parking_lot WHERE is_occupied=false ORDER BY id LIMIT 1`
+	mock.ExpectQuery(query).WillReturnRows(rows)
+
+	a := parkingLotMysqlRepo.NewMysqlParkingLotRepository(db)
+
+	_, err = a.UpdateOccupied(context.TODO(), ar)
+	assert.Error(t, err)
+}
+
+func TestUpdateUnOccupied(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+
+	query := `UPDATE parking_lot set registration_number=NULL, colour=NULL, is_occupied=false, updated_at = \?
+						WHERE id = \? and is_occupied=true`
+	currentTime := time.Now()
+	prep := mock.ExpectPrepare(query)
+	prep.ExpectExec().WithArgs(currentTime, 2).WillReturnResult(sqlmock.NewResult(1, 1))
+
+	a := parkingLotMysqlRepo.NewMysqlParkingLotRepository(db)
+
+	err = a.UpdateUnOccupied(context.TODO(), 2, currentTime)
+	assert.NoError(t, err)
+}

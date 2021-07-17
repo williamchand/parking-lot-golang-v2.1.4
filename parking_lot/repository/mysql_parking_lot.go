@@ -53,7 +53,7 @@ func (m *mysqlParkingLotRepository) Fetch(ctx context.Context, colour *string) (
 	if colour != nil {
 		args = "and colour = ?"
 	}
-	query := fmt.Sprintf(`SELECT id,registration_number,colour, is_occupied, created_at, updated_at
+	query := fmt.Sprintf(`SELECT id, registration_number, colour, is_occupied, created_at, updated_at
 											 FROM parking_lot WHERE is_occupied = true %s ORDER BY id`, args)
 	if colour != nil {
 		res, err = m.fetch(ctx, query, colour)
@@ -68,7 +68,7 @@ func (m *mysqlParkingLotRepository) Fetch(ctx context.Context, colour *string) (
 }
 
 func (m *mysqlParkingLotRepository) GetIdByRegistrationNumber(ctx context.Context, registrationNumber string) (res domain.ParkingLot, err error) {
-	query := `SELECT id,registration_number,colour,is_occupied, created_at, updated_at
+	query := `SELECT id, registration_number, colour, is_occupied, created_at, updated_at
   						FROM parking_lot WHERE is_occupied = true and registration_number = ?`
 
 	list, err := m.fetch(ctx, query, registrationNumber)
@@ -106,7 +106,9 @@ func (m *mysqlParkingLotRepository) DeleteAllSlot(ctx context.Context) (err erro
 }
 
 func (m *mysqlParkingLotRepository) Store(ctx context.Context, a *domain.ParkingLot) (err error) {
-	query := `INSERT INTO parking_lot(id,registration_number,colour,is_occupied,created_at,updated_at) VALUES(?, ?, ?, ?, ?, ?)`
+	query := "INSERT parking_lot SET id=? , registration_number=? , colour=?, is_occupied=?, updated_at=? , created_at=?"
+
+
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return
